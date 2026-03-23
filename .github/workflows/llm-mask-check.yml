@@ -1,0 +1,62 @@
+name: llm-mask - Check for Leaked Secrets
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  llm-mask-scan:
+    name: Scan for secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install llm-mask
+        run: |
+          npm install -g llm-mask
+          # Or build from local source if in same repo
+          # npm install && npm run build
+
+      - name: Scan codebase
+        id: scan
+        continue-on-error: true
+        run: |
+          npx llm-mask scan . --fail-on-detect --level basic \
+            --extensions .ts,.js,.py,.go,.rs,.java,.env,.yaml,.yml,.json \
+            --skip-dir node_modules,dist,build,.git,target \
+            2>&1 | tee scan-output.txt
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-mask-scan-results
+          path: scan-output.txt
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.scan.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('scan-output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔐 llm-mask Scan Results\n\n${output}\n\nPlease review and remove any sensitive data before merging.`
+            });
+
+      - name: Fail if secrets found
+        if: steps.scan.outcome == 'failure'
+        run: exit 1

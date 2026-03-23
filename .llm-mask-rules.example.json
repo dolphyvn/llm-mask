@@ -1,0 +1,26 @@
+{
+  "customPatterns": [
+    {
+      "name": "employee_id",
+      "regex": "\\bEMP-[0-9]{6}\\b",
+      "placeholder": "[EMPLOYEE_ID_{i}]",
+      "priority": 75
+    },
+    {
+      "name": "internal_ticket",
+      "regex": "\\bTICKET-[A-Z]{3}-[0-9]{4}\\b",
+      "placeholder": "[TICKET_{i}]",
+      "priority": 70
+    },
+    {
+      "name": "customer_id",
+      "regex": "\\bCUST-[0-9]{8}\\b",
+      "placeholder": "[CUSTOMER_ID_{i}]",
+      "priority": 75
+    }
+  ],
+  "defaultLevel": "standard",
+  "excludePatterns": [],
+  "auditLog": false,
+  "auditLogFile": ""
+}

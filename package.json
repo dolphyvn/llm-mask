@@ -1,0 +1,60 @@
+{
+  "name": "llm-mask",
+  "version": "0.3.0",
+  "description": "MCP server + library + CLI for masking sensitive data before sending to LLMs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "llm-mask": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "bun test",
+    "lint": "eslint src/",
+    "mcp": "node dist/mcp-server.js",
+    "scan": "node dist/cli.js scan",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "mcp",
+    "llm",
+    "masking",
+    "pii",
+    "privacy",
+    "security",
+    "claude",
+    "anthropic",
+    "secrets",
+    "detection",
+    "scanner",
+    "kubernetes",
+    "kubectl",
+    "ssh",
+    "credential-isolation"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    ".github/workflows"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
