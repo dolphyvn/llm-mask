@@ -379,6 +379,107 @@ Available tools:
 - `kube_exec` - Execute kubectl with redaction (NEW!)
 - `ssh_exec` - Execute SSH command with redaction (NEW!)
 
+## Security & Data Protection
+
+### How It Works
+
+```
+┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│  Claude     │  asks   │  llm-mask   │  sends  │  LLM API    │
+│  Code       │────────▶│  MCP Server │────────▶│  (Claude)   │
+│  (Local)    │         │  (Local)    │         │  (Remote)   │
+└─────────────┘         └─────────────┘         └─────────────┘
+      │                       │                        │
+      │                       │  masked data           │
+      │                       │  only                  │
+      └───────────────────────┴────────────────────────┘
+                 Your sensitive data NEVER leaves your machine
+```
+
+**The key insight**: llm-mask runs **locally on your machine**. The MCP server:
+1. Receives requests from Claude Code
+2. Masks the data **before** anything leaves your machine
+3. Sends only masked data to the LLM
+
+### What is Protected ✅
+
+| Scenario | Protected? | How |
+|----------|-----------|-----|
+| Explicit masking via MCP tools | ✅ Yes | Data masked locally before sending |
+| Using `exec_redacted` tool | ✅ Yes | Command runs locally, output masked before LLM sees it |
+| Using `kube_exec` tool | ✅ Yes | Credentials work for kubectl, output is masked |
+| Using `ssh_exec` tool | ✅ Yes | Credentials work for SSH, output is masked |
+
+### What is NOT Protected ⚠️
+
+| Scenario | Risk | Why |
+|----------|------|-----|
+| You paste sensitive data directly in chat | ❌ Not protected | Goes straight to LLM without masking |
+| You share file contents without masking | ❌ Not protected | File content sent directly to LLM |
+| Claude Code reads files independently | ❌ Not protected | MCP doesn't intercept file reads |
+
+### Example Usage
+
+```typescript
+// ❌ BAD - Pasting directly (NOT protected)
+User: "Help me debug this error with API key sk-proj-abc123"
+// → The key goes directly to Claude's API
+
+// ✅ GOOD - Using MCP tool (protected)
+User: "Help me debug this error"
+[Claude uses mask_data tool]
+// → Data masked locally, only [OPENAI_KEY_1] sent to LLM
+
+// ✅ GOOD - Using exec_redacted (credential isolation)
+User: "Check why my kubernetes secrets are failing"
+[Claude uses kube_exec tool]
+// → kubectl runs with your credentials
+// → Output masked: "password=[CREDENTIALS_1]"
+// → LLM sees structure but NOT actual credentials
+```
+
+### Security Model
+
+```
+Your Machine                          Remote (Anthropic)
+─────────────                        ────────────────────
+┌─────────────────────────────────────────────────────────┐
+│  Sensitive Data: sk-proj-abc123xyz456                    │
+│                                                           │
+│  MCP Server masks it → [OPENAI_KEY_1]                    │
+│                                                           │
+│  Only this is sent → [OPENAI_KEY_1]  ──────────────▶    │
+│                                                           │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Important Limitations
+
+1. **You must actively use the MCP tools** - Claude won't automatically mask everything
+2. **File reads bypass MCP** - When Claude reads files directly, that data isn't masked
+3. **MCP mappings are ephemeral** - Stored only in memory, cleared when MCP server restarts
+4. **Trust model** - You're trusting the llm-mask code running locally
+
+### Best Practices
+
+```bash
+# 1. Scan your codebase before sharing
+llm-mask scan ./src
+
+# 2. Use exec_redacted for command output
+llm-mask exec kubectl get secrets
+
+# 3. Mask git diffs before sharing
+git diff main | llm-mask diff
+
+# 4. When in doubt, pipe through llm-mask
+cat sensitive-file.json | llm-mask | llm # share masked output
+```
+
+### Summary
+
+**Yes, your sensitive data is protected** WHEN you use the MCP tools. But it's not automatic - you (or Claude) need to explicitly use the masking tools. The protection happens **locally before anything leaves your machine**.
+
 ## Library Usage
 
 ```typescript
