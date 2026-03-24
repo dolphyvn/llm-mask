@@ -593,6 +593,97 @@ const sshResult = await executor.ssh({
 clearMasker()
 ```
 
+## MCP Server (Claude Code Integration)
+
+llm-mask includes a Model Context Protocol (MCP) server for integration with Claude Code and other MCP-compatible AI assistants.
+
+### Installation
+
+First, ensure llm-mask is built:
+
+```bash
+cd /opt/works/personal/github/llm-mask
+npm install
+npm run build
+```
+
+### Claude Code Setup
+
+1. **Create a wrapper script** (optional but recommended):
+
+```bash
+cat > ~/.claude/mcp-llm-mask-wrapper.sh << 'EOF'
+#!/bin/bash
+cd /opt/works/personal/github/llm-mask/dist
+node mcp-server.js
+EOF
+
+chmod +x ~/.claude/mcp-llm-mask-wrapper.sh
+```
+
+2. **Add to Claude Code settings** (`~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "llm-mask": {
+      "command": "/Users/yourname/.claude/mcp-llm-mask-wrapper.sh"
+    }
+  }
+}
+```
+
+3. **Restart Claude Code** completely
+
+4. **Verify MCP server is loaded** - check the MCP status in Claude Code
+
+### Available MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `mask_data` | Mask sensitive data (API keys, emails, IPs, PII) |
+| `check_masking` | Dry-run: Check what WOULD be masked |
+| `scan_directory` | Scan a directory for sensitive data |
+| `mask_diff` | Mask git diff output for safe LLM code review |
+| `mask_context` | Context-aware masking (SQL, JSON, YAML) |
+| `list_patterns` | List all available masking patterns |
+| `clear_mappings` | Clear all in-memory mappings |
+| `exec_redacted` | Execute commands and return redacted output |
+| `kube_exec` | Execute kubectl with redacted output |
+| `ssh_exec` | Execute SSH commands with redacted output |
+
+### Usage Examples
+
+**Mask sensitive text:**
+```typescript
+// Claude Code can now use the mask_data tool
+// Result: "My API key is s**-p**-a** for j***@c********.c**"
+```
+
+**Execute kubectl safely:**
+```typescript
+// Claude Code can run kubectl and see redacted output
+// Your credentials work, but secrets are masked from the LLM
+```
+
+**Scan for secrets:**
+```typescript
+// Claude Code can scan your project for leaked secrets
+// Helps identify security issues before committing code
+```
+
+### Security Benefits
+
+When using MCP tools in Claude Code:
+
+- ✅ **Local processing**: All masking happens on your machine before sending to LLM
+- ✅ **Credential isolation**: Commands execute with real creds, output is redacted
+- ✅ **Explicit action**: You (or Claude) must explicitly use masking tools
+- ✅ **No automatic exposure**: Your data isn't sent to LLM unless you use the tools
+- ✅ **Full control**: You decide what gets masked and when
+
+**Important**: The MCP tools provide safety, but you need to use them. Claude Code won't automatically mask your content - you (or Claude) need to call the masking tools explicitly.
+
 ## License
 
 MIT
