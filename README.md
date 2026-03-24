@@ -607,35 +607,50 @@ npm install
 npm run build
 ```
 
-### Claude Code Setup
+### Claude Code Setup (Recommended Method)
 
-1. **Create a wrapper script** (optional but recommended):
+The easiest way to add the MCP server is using the Claude Code CLI:
 
 ```bash
-cat > ~/.claude/mcp-llm-mask-wrapper.sh << 'EOF'
-#!/bin/bash
-cd /opt/works/personal/github/llm-mask/dist
-node mcp-server.js
-EOF
-
-chmod +x ~/.claude/mcp-llm-mask-wrapper.sh
+# Add MCP server to user scope (global)
+claude mcp add --scope user --transport stdio llmmask -- bun /opt/works/personal/github/llm-mask/dist/mcp-server.js
 ```
 
-2. **Add to Claude Code settings** (`~/.claude/settings.json`):
+That's it! The MCP server is now configured and available in Claude Code.
+
+**Why this works:**
+- `--scope user` - Adds to your user configuration (available in all projects)
+- `--transport stdio` - Uses stdio transport for communication
+- `bun` - Runs the server with Bun (better ES module support than node)
+- Direct path to `mcp-server.js` - No wrapper script needed
+
+### Verify Installation
+
+```bash
+# Check MCP server status
+claude mcp list
+
+# You should see:
+# llmmask: bun /opt/works/personal/github/llm-mask/dist/mcp-server.js  - ✓ Connected
+```
+
+### Alternative: Manual Configuration
+
+If you prefer manual configuration, edit `~/.claude/settings.json`:
 
 ```json
 {
   "mcpServers": {
-    "llm-mask": {
-      "command": "/Users/yourname/.claude/mcp-llm-mask-wrapper.sh"
+    "llmmask": {
+      "command": "bun",
+      "args": ["/opt/works/personal/github/llm-mask/dist/mcp-server.js"],
+      "transport": "stdio"
     }
   }
 }
 ```
 
-3. **Restart Claude Code** completely
-
-4. **Verify MCP server is loaded** - check the MCP status in Claude Code
+Then restart Claude Code completely.
 
 ### Available MCP Tools
 
