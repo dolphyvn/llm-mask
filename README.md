@@ -697,6 +697,114 @@ When using MCP tools in Claude Code:
 - ✅ **No automatic exposure**: Your data isn't sent to LLM unless you use the tools
 - ✅ **Full control**: You decide what gets masked and when
 
+---
+
+## Auto-Mask Mode
+
+For more automatic protection, llm-mask includes an **auto-mask mode** that continuously monitors and masks content:
+
+### Quick Start
+
+```bash
+# Install shell integration
+npm install -g llm-mask
+llm-mask install-shell
+
+# Reload your shell
+source ~/.zshrc  # or source ~/.bashrc
+```
+
+### Auto-Mask Commands
+
+```bash
+# Enable auto-masking for all command output
+llm-mask-prompt on
+
+# Enable clipboard auto-masking (copies get masked automatically)
+llm-mask-clipboard on
+
+# Check status
+llm-mask-status
+```
+
+### Auto-Mask Usage Examples
+
+**Watch a log file:**
+```bash
+llm-mask auto --watch /var/log/app.log
+# Any changes to the log are auto-masked in real-time
+```
+
+**Watch clipboard:**
+```bash
+llm-mask auto --clipboard
+# Anything you copy is automatically masked
+# Masked version is written back to clipboard
+```
+
+**Mask once:**
+```bash
+echo "My API key is sk-proj-abc" | llm-mask auto "My API key is sk-proj-abc"
+# Output: My API key is sk-proj-abc for [EMAIL_1]
+```
+
+### Shell Aliases
+
+After sourcing the shell integration, you get these aliases:
+
+```bash
+# Quick clipboard masking
+llm-mask-now          # Mask current clipboard contents
+
+# Mask and copy back to clipboard
+llm-mask-cp           # Copy masked version to clipboard
+
+# Safe command aliases
+auto-kubectl         # Run kubectl with auto-masking
+auto-ssh             # Run ssh with auto-masking
+```
+
+### Direct CLI Usage
+
+```bash
+# Single input
+llm-mask auto "My API key is sk-proj-abc123 for john@test.com"
+
+# Watch file
+llm-mask auto --watch ./app.log
+
+# Watch directory
+llm-mask auto --watch-dir ./logs
+
+# Watch clipboard
+llm-mask auto --clipboard
+```
+
+### Important: Auto-Mask is NOT Automatic Either!
+
+Even with auto-mask mode, **masking is not fully automatic**:
+
+| Mode | What Happens |
+|------|--------------|
+| **Regular chat** | ❌ NOT masked - sent to Claude as-is |
+| **llm-mask-prompt on** | ✅ Commands you run are auto-masked |
+| **llm-mask-clipboard on** | ✅ Clipboard contents are auto-masked |
+| **--watch file** | ✅ File changes are auto-masked |
+
+**The key insight**: Auto-mask modes help with specific workflows (commands, clipboard, files), but **don't automatically protect everything you type in chat**.
+
+---
+
+## Security Benefits
+
+When using MCP tools in Claude Code:
+
+- ✅ **Local processing**: All masking happens on your machine before sending to LLM
+- ✅ **Credential isolation**: Commands execute with real creds, output is redacted
+- ✅ **Explicit action**: You (or Claude) must explicitly use masking tools
+- ✅ **No automatic exposure**: Your data isn't sent to LLM unless you use the tools
+- ✅ **Full control**: You decide what gets masked and when
+
 **Important**: The MCP tools provide safety, but you need to use them. Claude Code won't automatically mask your content - you (or Claude) need to call the masking tools explicitly.
 
 ## License

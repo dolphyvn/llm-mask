@@ -15,6 +15,8 @@
     "lint": "eslint src/",
     "mcp": "node dist/mcp-server.js",
     "scan": "node dist/cli.js scan",
+    "auto": "node dist/auto-mask.js",
+    "install-shell": "node dist/install-shell.js",
     "prepublishOnly": "bun run build"
   },
   "keywords": [
@@ -36,10 +38,13 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
-    "commander": "^12.1.0"
+    "commander": "^12.1.0",
+    "clipboardy": "^4.0.0",
+    "chokidar": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "@types/chokidar": "^2.1.0",
     "typescript": "^5.7.2"
   },
   "exports": {
