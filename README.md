@@ -1,8 +1,57 @@
 # llm-mask
 
-> Mask sensitive data before sending to LLMs. Keep the semantic meaning, lose the secrets.
+> **Mask sensitive data before sending to cloud LLMs. Enable safe AI adoption without compromising security.**
 
 **Version 0.3.0** - Now with exec/kube/ssh commands for credential isolation.
+
+---
+
+## The Problem
+
+Modern AI assistants (Claude, GPT-4, etc.) are incredibly powerful, but using them with internal systems poses significant security risks:
+
+- **Credential leakage**: API keys, passwords, tokens accidentally exposed to LLMs
+- **Data exposure**: Customer data, internal IPs, employee PII sent to external services
+- **Compliance violations**: HIPAA, GDPR, SOX requirements prevent cloud LLM usage
+- **Shadow IT**: Teams use unauthorized AI tools, creating unmonitored data flows
+
+**Result**: Security teams block cloud LLM access entirely, and the organization loses out on AI productivity gains.
+
+---
+
+## The Solution
+
+`llm-mask` is a security tool that **redacts sensitive data before it reaches the LLM**, while preserving the semantic structure needed for analysis:
+
+```bash
+# Before: Risky
+echo "Check the API logs at https://internal.company.com/logs using key sk-proj-abc123" | claude
+
+# After: Safe
+echo "Check the API logs at https://internal.company.com/logs using key sk-proj-abc123" | llm-mask | claude
+# Output: "Check the API logs at h***://i********.c********.c**/l*** using key s**-p**-a**"
+```
+
+**What makes it different:**
+- ✅ **Format-preserving masking**: `j***@a***.com` instead of `[EMAIL_1]` - LLM can still analyze patterns
+- ✅ **Credential isolation**: Run commands with real credentials, output redacted for LLMs
+- ✅ **Context-aware**: Understands SQL, JSON, YAML - masks values, preserves structure
+- ✅ **Deterministic**: Same input always produces same output - safe for logging
+
+---
+
+## Security Objectives
+
+| Objective | How It's Achieved |
+|-----------|-------------------|
+| **Zero data exposure** | Sensitive values redacted before leaving your machine |
+| **Credential isolation** | Commands execute with real creds, output sanitized before LLM sees it |
+| **Audit-safe logging** | Only masked data in logs, no secrets in memory or disk |
+| **Compliance-ready** | Helps meet HIPAA/GDPR/SOX requirements for data handling |
+| **No semantic loss** | Preserved structure lets LLMs analyze without seeing sensitive values |
+| **Deterministic** | Same input → same output, reversible with your salt (optional) |
+
+---
 
 ## Features
 
